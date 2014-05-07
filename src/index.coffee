@@ -26,12 +26,12 @@ download = ->
     , interval
 
 writeFile = ->
-  file = '/Users/tree/tmp/simulation.test'
+  file = '/mnt/simulation.test'
   options =
-    flags : 'a+'
+    flags : 'w'
   writeStream = fs.createWriteStream file, options
   writeBuf = ->
-    buf = new Buffer _.random 1024 * 1024
+    buf = new Buffer _.random 256 * 1024
     writeStream.write buf
     setTimeout ->
       writeBuf()
