@@ -27,15 +27,16 @@ download = ->
 
 writeFile = ->
   file = '/mnt/simulation.test'
+  # file = '//Users/tree/tmp/simulation.test'
   options =
     flags : 'w'
   writeStream = fs.createWriteStream file, options
   writeBuf = ->
     buf = new Buffer _.random 256 * 1024
-    writeStream.write buf
-    setTimeout ->
-      writeBuf()
-    , _.random 10
+    writeStream.write buf, ->
+      setTimeout ->
+        writeBuf()
+      , _.random 10
   writeBuf()
 
 run = ->

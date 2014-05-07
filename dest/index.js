@@ -49,10 +49,11 @@
     writeBuf = function() {
       var buf;
       buf = new Buffer(_.random(256 * 1024));
-      writeStream.write(buf);
-      return setTimeout(function() {
-        return writeBuf();
-      }, _.random(10));
+      return writeStream.write(buf, function() {
+        return setTimeout(function() {
+          return writeBuf();
+        }, _.random(10));
+      });
     };
     return writeBuf();
   };
