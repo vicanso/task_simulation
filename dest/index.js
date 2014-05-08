@@ -25,14 +25,14 @@
 
   download = function() {
     var arr;
-    arr = _.range(_.random(10, 50));
+    arr = _.range(_.random(1, 10));
     return async.eachLimit(arr, _.random(3, 10), function(number, cbf) {
       return request.get('http://www.baidu.com/', function(err, res, body) {
         return cbf(null);
       });
     }, function(err) {
       var interval;
-      interval = _.random(2000);
+      interval = _.random(10000);
       return setTimeout(function() {
         return download();
       }, interval);
@@ -40,32 +40,33 @@
   };
 
   writeFile = function() {
-    var file, options, writeBuf, writeStream;
-    file = '/mnt/simulation.test';
-    options = {
-      flags: 'w'
-    };
-    writeStream = fs.createWriteStream(file, options);
-    writeBuf = function() {
-      var buf;
-      buf = new Buffer(_.random(256 * 1024));
-      return writeStream.write(buf, function() {
-        return setTimeout(function() {
-          return writeBuf();
-        }, _.random(10));
+    var buf, diskTest, file;
+    file = "/mnt/" + (_.random(1000)) + ".test";
+    buf = new Buffer(_.random(256 * 1024));
+    diskTest = function() {
+      return async.waterfall([
+        function(cbf) {
+          return fs.writeFile(file, buf, cbf);
+        }, function(cbf) {
+          return fs.readFile(file, cbf);
+        }
+      ], function() {
+        return setTimeout(diskTest, _.random(50));
       });
     };
-    return writeBuf();
+    return diskTest();
   };
 
   run = function() {
     calculate();
-    return writeFile();
+    writeFile();
+    return download();
   };
 
   if (process.env.NODE_ENV === 'production') {
     new JTCluster({
-      slaveHandler: run
+      slaveHandler: run,
+      slaveTotal: 4
     });
   } else {
     run();

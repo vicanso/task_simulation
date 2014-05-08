@@ -15,38 +15,42 @@ calculate = ->
 
 
 download = ->
-  arr = _.range _.random 10, 50
+  arr = _.range _.random 1, 10
   async.eachLimit arr, _.random(3, 10), (number, cbf) ->
     request.get 'http://www.baidu.com/', (err, res, body) ->
       cbf null
   , (err) ->
-    interval = _.random 2000
+    interval = _.random 10000
     setTimeout ->
       download()
     , interval
 
 writeFile = ->
-  file = '/mnt/simulation.test'
-  # file = '//Users/tree/tmp/simulation.test'
-  options =
-    flags : 'w'
-  writeStream = fs.createWriteStream file, options
-  writeBuf = ->
-    buf = new Buffer _.random 256 * 1024
-    writeStream.write buf, ->
-      setTimeout ->
-        writeBuf()
-      , _.random 10
-  writeBuf()
+  file = "/mnt/#{_.random(1000)}.test"
+  # file = '/Users/tree/tmp/simulation.test'
+  buf = new Buffer _.random 256 * 1024
+
+  diskTest = ->
+    async.waterfall [
+      (cbf) ->
+        fs.writeFile file, buf, cbf
+      (cbf) ->
+        fs.readFile file, cbf
+    ], ->
+      setTimeout diskTest, _.random 50
+
+
+  diskTest()
 
 run = ->
   calculate()
   writeFile()
-  # download()
+  download()
 
 if process.env.NODE_ENV == 'production'
   new JTCluster {
     slaveHandler : run
+    slaveTotal : 4
   }
 else
   run()
